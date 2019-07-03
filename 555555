@@ -1,0 +1,55 @@
+from selenium import webdriver
+from bs4 import BeautifulSoup
+
+chrome_options = webdriver.ChromeOptions()
+
+driver =  webdriver.Chrome(executable_path=r'C:\Users\bantita.y\Downloads\chromedriver.exe' )
+driver.get("https://www.fitflop.com/eu/en//")
+html = BeautifulSoup(driver.page_source,'html.parser')
+
+a = []
+for i in html.find_all('ul', class_='menu-level-one')[0].find_all('a'):
+  a.append(i['href'])
+
+sub_cat = []
+for i in a: 
+    if 'shop' not in i:
+        pass
+    else:
+        sub_cat.append('https://www.fitflop.com'+i)
+
+all_model = []
+all_price = []
+all_cat = []
+all_name = []
+alll = []
+
+for sub in range(0,len(sub_cat)):
+    
+    driver.get(sub_cat[sub])
+    html = BeautifulSoup(driver.page_source,'html.parser') #get to the link in sub_cat
+    last_page = html.find_all('div',class_='product-list')
+
+    for sub_x in last_page:
+        products = sub_x.find_all('div',class_='product-meta__container')
+        try:
+            cat = sub_x.find_all('p', class_='product-list__list-title--msg')[0].text
+        except:
+            pass
+
+        for product in products:
+            model = product.find_all('div',class_='product-meta__tile')[0].text
+            name = product.find_all('div',class_='product-meta__name')[0].text
+            try :
+                price = product.find_all('div',class_='product-meta__now-price')[0].text
+
+            except :
+                try:
+                    price = product.find_all('div',class_='product-meta__price')[0].text
+                except:
+                    price=0
+
+            alll.append([cat,model,name,price])
+            print([cat,model,name,price])
+
+(pd.DataFrame(alll)).to_csv('tryyy',index=None)
